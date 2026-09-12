@@ -2,25 +2,37 @@
 
 **Problem Statement ID**: `SIH26173`  
 **Application Name**: iTantra  
-**Platform**: Android Native App (Capacitor) & Responsive Mobile Web Application  
+**Platform**: Browser Web Demo (Live Link Deployment) & Android Native Application (Capacitor APK)  
 
 ---
 
 ## 📌 Project Overview
 
-**iTantra** is a zero-internet, peer-to-peer voice and text communication application designed for field operations, disaster response, and internet-denied environments. It provides secure, local, multi-language Speech-to-Text (STT) and Text-to-Speech (TTS) communication directly between mobile devices over local Bluetooth Low Energy (BLE) and Wi-Fi Direct mesh protocols without relying on cloud infrastructure, cellular networks, or central servers.
+**iTantra** is a zero-internet, peer-to-peer voice and text communication application designed for field operations, emergency response, and internet-denied environments. It provides secure, local, multi-language Speech-to-Text (STT) and Text-to-Speech (TTS) communication directly between mobile devices over local Bluetooth Low Energy (BLE) and Wi-Fi Direct mesh protocols without relying on cloud infrastructure, cellular networks, or central servers.
 
 ---
 
 ## ✨ Key Functionality
 
-- **📱 True Bidirectional Two-Phone Communication**: Phone A and Phone B run the same iTantra application and seamlessly switch between sender and receiver roles.
+- **📱 True Bidirectional Two-Phone Communication**: Phone A and Phone B run the same iTantra application and seamlessly alternate between sender and receiver roles.
 - **🎙️ Push-To-Talk (PTT)**: Tap-and-hold voice capture with real-time audio waveform feedback and speech-to-text transcript generation.
 - **⚡ Emergency Priority System**: Supports **Normal**, **Important** (amber alert), and **Emergency** (red full-screen override with audio alert and manual acknowledgment) packet priorities.
 - **🔄 Instant Acknowledgment & Replay**: Remote receivers can acknowledge emergency alerts with a single tap, returning confirmation to the sender and replaying messages via device-local TTS.
 - **🌐 Per-Device Language Selection**: Supports 10 regional Indian languages (Hindi, Marathi, Gujarati, Kannada, Malayalam, Tamil, Telugu, Odia, Bengali, English) configured independently per device.
 - **📶 Offline Device Discovery & Handshake**: Automatic scan, discovery, and pairing with nearby iTantra field units over local BLE/Wi-Fi Direct mesh networks.
 - **🌗 Light & Dark Theme Support**: Sleek, high-contrast, energy-efficient UI optimized for daylight and dark environment operations.
+
+---
+
+## 🌐 Android Native vs. Web Demo Architecture
+
+| Feature | Android Native Application (APK) | Web Demo (Browser Live Link) |
+| :--- | :--- | :--- |
+| **Transport Driver** | Hardware BLE & Wi-Fi Direct Mesh | P2P `BroadcastChannel` Mesh |
+| **Speech STT Engine** | On-Device Offline STT Pipeline | Web Speech API STT |
+| **Speech TTS Engine** | On-Device Local TTS Engine | Web Speech API TTS |
+| **Installation** | Sideload `app-debug.apk` | Open Live Link URL in browser |
+| **Multi-Device Test** | Connect two Android phones | Open two browser tabs / windows |
 
 ---
 
@@ -31,109 +43,77 @@
 - **Build Tooling**: Vite 8
 - **Mobile Container**: Capacitor 8 (`@capacitor/core`, `@capacitor/android`)
 - **Offline Mesh Transport**: P2P `BroadcastChannel` & Local Storage Sync Abstraction Layer (compatible with BLE / Wi-Fi Direct hardware drivers)
-- **Local Speech Engines**: Device-Local Speech-to-Text (STT) pipeline & Web Speech API Text-to-Speech (TTS) engine
 
 ---
 
-## 🌐 Communication Architecture
-
-```
-PHONE A (Field Unit 1)                                PHONE B (Field Unit 2)
- ┌─────────────┐                                       ┌─────────────┐
- │ Microphone  │                                       │ Speaker/TTS │
- └──────┬──────┘                                       └──────▲──────┘
-        │                                                     │
-        ▼                                                     │
- ┌─────────────┐                                       ┌─────────────┐
- │ STT Engine  │                                       │ Local TTS   │
- └──────┬──────┘                                       └──────▲──────┘
-        │                                                     │
-        ▼                                                     │
- ┌─────────────┐                                       ┌─────────────┐
- │ Text Packet │                                       │ Priority    │
- └──────┬──────┘                                       │ Inspection  │
-        │                                              └──────▲──────┘
-        │                                                     │
-        └──────────────►  OFFLINE P2P MESH  ──────────────────┘
-                      (BLE / Wi-Fi Direct)
-```
-
-### Text Packet Payload
-```json
-{
-  "packet_id": "pkt_1710000000000_x9a",
-  "type": "MESSAGE",
-  "sender_id": "Field Unit 1",
-  "target_id": "Field Unit 2",
-  "timestamp": "2026-09-13T00:00:00.000Z",
-  "language": "hi",
-  "priority": "normal",
-  "text": "सभी यूनिट अपनी स्थिति की रिपोर्ट करें"
-}
-```
-
----
-
-## 🚀 How to Run the Project
+## 🚀 How to Run the Project Locally
 
 ### 1. Prerequisites
 - Node.js (v18 or higher)
 - npm or pnpm
-- Android Studio (for building Android APK)
 
-### 2. Install Dependencies
+### 2. Install Dependencies & Start Dev Server
 ```bash
 npm install
-```
-
-### 3. Run Development Server
-```bash
 npm run dev
 ```
-Open `http://localhost:8443` in your browser. Open two tabs/windows to test two-phone P2P communication!
+Open `http://localhost:8443` in your browser. Open two browser tabs to test bidirectional two-phone communication!
 
-### 4. Build Web Application
+---
+
+## 📦 How to Build the Web Version
+
+To generate the production web bundle for the **Live Link**:
+
 ```bash
 npm run build
 ```
 
-### 5. Build Installable Android APK
+This compiles all assets into the **`dist/`** output directory.
+
+You can preview the production build locally by running:
 ```bash
-npm run apk:build
-```
-Or open the `android/` directory in **Android Studio** and select **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
-
----
-
-## 📁 Project Structure
-
-```text
-Build application/
-├── android/                   # Native Android platform project (Capacitor)
-├── public/                    # Web app manifest and icons
-├── src/
-│   ├── screens/
-│   │   ├── TalkScreen.jsx     # PTT talk interface, live transcript & incoming cards
-│   │   ├── ConnectionScreen.jsx # P2P device discovery, pairing & unit selector
-│   │   ├── SettingsScreen.jsx # Appearance (Dark/Light), audio & language settings
-│   │   └── AlertScreen.jsx    # Emergency priority full-screen alert & acknowledgment
-│   ├── services/
-│   │   ├── transport.js       # Offline P2P mesh transport abstraction service
-│   │   ├── packet.js          # Message packet and ACK creation helpers
-│   │   ├── priority.js        # Priority keyword classifier (Normal/Important/Emergency)
-│   │   └── speech.js          # STT & TTS local speech synthesis engine
-│   ├── App.jsx                # Main application state controller & mobile shell
-│   ├── main.jsx               # React entry point
-│   └── index.css              # Global styles and Tailwind CSS v4 directives
-├── capacitor.config.json      # Capacitor Android app configuration
-├── vite.config.js             # Vite 8 build configuration
-└── package.json               # Project dependencies and build scripts
+npm run preview
 ```
 
 ---
 
-## 🔒 Offline & Privacy Guarantee
+## 🌐 Live Link Web Deployment Instructions
 
-- Zero internet connection or cloud service dependencies.
-- No remote backend servers, Firebase, or WebSockets required.
-- All speech recognition and speech synthesis run locally on device hardware.
+The **`dist/`** directory contains static HTML, JavaScript, CSS, and asset files. It can be deployed to any static web hosting platform in under 2 minutes:
+
+### Option A: Vercel (Recommended)
+1. Install Vercel CLI: `npm i -g vercel`
+2. Run in project root:
+   ```bash
+   vercel --prod
+   ```
+3. Vercel will build and provide your **Live Link URL** (e.g. `https://itantra-demo.vercel.app`).
+
+### Option B: Netlify Drag & Drop
+1. Run `npm run build` locally.
+2. Go to [Netlify Drop](https://app.netlify.com/drop).
+3. Drag and drop the **`dist`** folder directly into the browser window.
+4. Netlify will generate your **Live Link URL** instantly!
+
+### Option C: GitHub Pages
+1. Push project to your GitHub repository.
+2. In Repository Settings > Pages, set source branch to `main` (or deploy `dist/` folder via `gh-pages`).
+
+---
+
+## 📱 How to Build the Installable Android APK
+
+```bash
+npm run cap:sync
+```
+Open the `android/` directory in **Android Studio** and select **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
+
+The generated installer will be located at:
+`android/app/build/outputs/apk/debug/app-debug.apk`
+
+---
+
+## 📁 Exact Folder to Deploy for Live Link
+
+> **`dist/`** (located at `c:\Users\radsp\Desktop\SIH\Build application\dist`)
