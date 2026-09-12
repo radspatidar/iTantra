@@ -1,0 +1,11 @@
+{
+  "title": "iTantra",
+  "description": "Offline voice communication platform",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
